@@ -9,7 +9,111 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      attendance_records: {
+        Row: {
+          created_at: string
+          device_info: Json | null
+          id: string
+          ip_address: string | null
+          is_within_geofence: boolean | null
+          location_lat: number | null
+          location_lng: number | null
+          status: Database["public"]["Enums"]["attendance_status"]
+          timestamp: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          device_info?: Json | null
+          id?: string
+          ip_address?: string | null
+          is_within_geofence?: boolean | null
+          location_lat?: number | null
+          location_lng?: number | null
+          status: Database["public"]["Enums"]["attendance_status"]
+          timestamp?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          device_info?: Json | null
+          id?: string
+          ip_address?: string | null
+          is_within_geofence?: boolean | null
+          location_lat?: number | null
+          location_lng?: number | null
+          status?: Database["public"]["Enums"]["attendance_status"]
+          timestamp?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      geofence_settings: {
+        Row: {
+          center_lat: number
+          center_lng: number
+          created_at: string
+          id: string
+          is_active: boolean | null
+          radius_meters: number
+          updated_at: string
+        }
+        Insert: {
+          center_lat: number
+          center_lng: number
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          radius_meters?: number
+          updated_at?: string
+        }
+        Update: {
+          center_lat?: number
+          center_lng?: number
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          radius_meters?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      shift_configurations: {
+        Row: {
+          auto_clock_out: boolean | null
+          created_at: string
+          end_time: string
+          grace_period_minutes: number | null
+          id: string
+          name: string
+          start_time: string
+          updated_at: string
+        }
+        Insert: {
+          auto_clock_out?: boolean | null
+          created_at?: string
+          end_time: string
+          grace_period_minutes?: number | null
+          id?: string
+          name: string
+          start_time: string
+          updated_at?: string
+        }
+        Update: {
+          auto_clock_out?: boolean | null
+          created_at?: string
+          end_time?: string
+          grace_period_minutes?: number | null
+          id?: string
+          name?: string
+          start_time?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -18,7 +122,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      attendance_status: "clock_in" | "clock_out"
     }
     CompositeTypes: {
       [_ in never]: never
