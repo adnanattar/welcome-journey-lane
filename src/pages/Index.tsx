@@ -4,24 +4,46 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { Card } from "@/components/ui/card";
 import { Clock, MapPin } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [currentStatus, setCurrentStatus] = useState<"clock_in" | "clock_out" | null>(null);
   const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
+    checkAuth();
     checkLastAttendanceStatus();
   }, []);
 
+  const checkAuth = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to use the attendance system",
+        variant: "destructive",
+      });
+      navigate("/login");
+      return;
+    }
+  };
+
   const checkLastAttendanceStatus = async () => {
     try {
-      const { data: lastRecord } = await supabase
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user?.id) return;
+
+      const { data: lastRecord, error } = await supabase
         .from("attendance_records")
         .select("status")
+        .eq("user_id", session.user.id)
         .order("timestamp", { ascending: false })
         .limit(1);
+
+      if (error) throw error;
 
       if (lastRecord && lastRecord.length > 0) {
         setCurrentStatus(lastRecord[0].status);
@@ -55,10 +77,9 @@ const Index = () => {
       .eq("is_active", true)
       .single();
 
-    if (!geofence) return true; // If no geofence is set, allow clock-in
+    if (!geofence) return true;
 
-    // Calculate distance using Haversine formula
-    const R = 6371e3; // Earth's radius in meters
+    const R = 6371e3;
     const φ1 = (lat * Math.PI) / 180;
     const φ2 = (geofence.center_lat * Math.PI) / 180;
     const Δφ = ((geofence.center_lat - lat) * Math.PI) / 180;
@@ -75,6 +96,17 @@ const Index = () => {
 
   const handleAttendance = async () => {
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user?.id) {
+        toast({
+          title: "Authentication Required",
+          description: "Please log in to record attendance",
+          variant: "destructive",
+        });
+        navigate("/login");
+        return;
+      }
+
       setIsLoading(true);
 
       // Get current location
@@ -103,6 +135,7 @@ const Index = () => {
       // Record attendance
       const newStatus = currentStatus === "clock_in" ? "clock_out" : "clock_in";
       const { error } = await supabase.from("attendance_records").insert({
+        user_id: session.user.id,
         status: newStatus,
         location_lat: lat,
         location_lng: lng,
